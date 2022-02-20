@@ -11,7 +11,7 @@
 """
 
 import numpy as np
-import matplotlib as pl
+import pylab as pl
 
 __author__ = 'Luiz Antônio Theodoro de Souza'
 __version__ = '0.1'
@@ -19,18 +19,18 @@ __version__ = '0.1'
 randn = np.random.randn
 rand = np.random.random
 
-def solve_sde(alfa=None, beta=None, X0=None, dt=1.0, N=100, t0=0.0, DW=None):
+def solve_sde(alfa=None, beta=None, Z0_sde=None, dt=1.0, N=100, t0=0.0, DW=None):
     """
     Sintaxe:
     ----------
     solve_sde(alfa=None, beta=None, X0=None, dt=None, N=100, t0=0, DW=None)
     Parameters:
     ----------
-        alfa  : uma função lambda com dois argumentos, o estado X e o tempo, 
+        alfa  : uma função lambda com dois argumentos, o estado Z e o tempo, 
                 que define a parte determinística da EDE.
-        beta  : uma função lambda com dois argumentos, o estado X e o tempo, 
+        beta  : uma função lambda com dois argumentos, o estado Z e o tempo, 
                 que define a parte estocástica da EDE.
-        X0    : Condições iniciais da EDE. 
+        Z0_sde: Condições iniciais da EDE. 
                 (default: gaussian np.random)
         dt    : O incremento de tempo da solução.
                 (default: 1)
@@ -46,59 +46,60 @@ def solve_sde(alfa=None, beta=None, X0=None, dt=1.0, N=100, t0=0.0, DW=None):
     == Mathematical model representing the dynamics of piezoeletric vibratory
     energy harvest:
     dX = V
-    dY = -b Y + V
-    dV = -n V - (1 - r) X - d X³ - a Y + dW3
-    xZ = lambda Z, t: Z[2] ;
-    yZ = lambda Z, t: -b * Z[1] + Z[2] ;
-    vZ = lambda Z, t: -n * Z[2] - (1 - r) * Z[0] - d * Z[0]**3 - a * Z[1] ;
-    alfa = lambda Z, t: np.array( [xZ(X,t), yZ(X,t), vZ(X,t)] );
-    beta = lambda Z, t: np.array( [     0,      0,      s] );
-    X0 = [0.0, 0.0, 0.0];
+    dY = -bY + V
+    dV = -nV - (1-r)X - dX³ - aY + dW
+    Zx = lambda Z, t: Z[2] 
+    Zy = lambda Z, t: -b*Z[1] + Z[2] 
+    Zv = lambda Z, t: -n*Z[2] - (1-r)*Z[0] - d*Z[0]**3 - a*Z[1]
+    alfa_sdof = lambda Z, t: np.array([xZ(X,t), yZ(X,t), vZ(X,t)])
+    beta_sdof = lambda Z, t: np.array([ 0, 0, -s])
+    Z0_sdof = [0.0, 0.0, 0.0]
     t, Y = solve_sde(alfa=alfa, beta=beta, X0=X0, dt=0.01, N=10000)
     """
     if alfa is None or beta is None:
-        print("Error: SDE not defined.")
+        print("Erro: SDE não foi definida.")
         return
-    X0 = randn(np.array(alfa(0, 0)).shape or 1) if X0 is None else np.array(X0)
-    DW = (lambda Y, dt: randn(len(X0)) * np.sqrt(dt)) if DW is None else DW
-    Y, ti = np.zeros((N, len(X0))), np.arange(N)*dt + t0
-    Y[0, :], Dn = X0, dt
+    Z, ti = np.zeros((N, len(Z0_sde))), np.arange(N)*dt + t0
+    Z[0, :], h = Z0_sde, dt
     for n in range(N-1):
-        t = ti[n]
-        a, b, DWn = alfa(Y[n, :], t), beta(Y[n, :], t), DW(Y[n, :], dt)
-        K = Y[n, :] + a * Dn + b * DWn * Dn**0.5
-        Y[n+1, :] = Y[n, :] + (a + alfa(K, t)) * Dn*0.5 + b * DWn * Dn**0.5 
-    return ti, Y
+        t, tp1 = ti[n], ti[n+1]
+        a = alfa(Z[n,:], t)
+        b = beta(Z[n,:], t)
+        DWn = DW(h)
+        K = Z[n,:] + a*h*0.5 + b*DWn
+        aK = alfa(K, tp1)
+        Z[n+1,:] = Z[n,:] + (a + aK)*h*0.5 + b*DWn 
+    return ti, Z
 
 
-def MSV_rk2(alfa=None, beta=None, X0=None, dt=1.0, N=100, \
+def MSV_rk2(alfa=None, beta=None, Z0=None, dt=1.0, N=100, \
              t0=0.0, DW=None, M=100):
-    E = np.zeros((M,N,len(X0)))
+    E = np.zeros((M,N,len(Z0)))
     for m in range(M):
-        t, Y = solve_sde(alfa=alfa, beta=beta, X0=X0, dt=dt, N=N, t0=t0, DW=DW)
+        t, Y = solve_sde(alfa=alfa, beta=beta, Z0_sde=Z0, dt=dt, N=N, t0=t0, DW=DW)
         E[m, :, :] = np.square(Y)
     ret = np.mean(E, axis=0)
     return t, ret
 
 
-def dist3pts(m):
-    f = np.vectorize(lambda x: 0.0 if (x < 2/3) \
-                        else 3.0**0.5 if (x >= 2/3) and (x < 5/6) \
-                        else -(3.0**0.5))
-    return f(np.random.random(m))
+def dist3pts():
+    f = lambda x: 0.0 if (x < 2/3) \
+                    else 3.0**0.5 if (x >= 2/3) and (x < 5/6) \
+                    else -(3.0**0.5)
+    return f(np.random.random())
 
 if __name__ == '__main__':
     a, b, n, d, r, s = 0.5625, 0.5, 0.02, 0.0, 0.5, 0.1
-    xZ = lambda Z, t: Z[2]
-    yZ = lambda Z, t: -b * Z[1] + Z[2]
-    vZ = lambda Z, t: -n * Z[2] - (1 - r) * Z[0] - d * Z[0]**3 - a * Z[1]
-    alfa_sdof = lambda Z, t: np.array([xZ(Z, t), yZ(Z, t), vZ(Z, t)])
-    beta_sdof = lambda Z, t: np.array([0, 0, s])
-    dW = lambda Z, dt: dist3pts(len(Z)) #* np.sqrt(dt)
-    h = 0.1
-    T = 300
-    Z0 = [0.0, 0.0, 0.0]
-    t, MSV = MSV_rk2(alfa=alfa_sdof, beta=beta_sdof, X0=Z0, dt=h, DW=dW, \
+    Zx = lambda Z, t: Z[2]
+    Zy = lambda Z, t: -b * Z[1] + Z[2]
+    Zv = lambda Z, t: -n * Z[2] - (1 - r) * Z[0] - d * Z[0]**3 - a * Z[1]
+    alfa_sdof = lambda Z, t: np.array([Zx(Z, t), Zy(Z, t), Zv(Z, t)])
+    beta_sdof = lambda Z, t: np.array([0, 0, -s])
+    dW = lambda dt: dist3pts() * np.sqrt(dt)
+    h = 0.6
+    T = 400
+    Z0_sdof = [0.0, 0.0, 0.0]
+    t, MSV = MSV_rk2(alfa=alfa_sdof, beta=beta_sdof, Z0=Z0_sdof, dt=h, DW=dW, \
                   N=int(T/h), M=1000)
     pl.subplot(131)
     pl.plot(t, MSV[:,0], label='E[X(t)²]')

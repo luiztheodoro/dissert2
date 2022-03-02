@@ -11,7 +11,7 @@
 """
 
 import numpy as np
-import pylab as pl
+import matplotlib.pyplot as pl
 from scipy.linalg import expm
 
 __author__ = 'Luiz Antônio Theodoro de Souza'
@@ -20,6 +20,8 @@ __version__ = '0.1'
 randn = np.random.randn
 rand = np.random.random
 mm = np.matmul
+
+np.random.seed(100)
 
 def solve_sde(A = None, gamma=None, beta=None, Z0=None, dt=1.0, N=100, t0=0.0, DW=None):
     """
@@ -123,23 +125,41 @@ if __name__ == '__main__':
     beta_sdof = lambda Z, t: np.array([0, 0, -s])
     dW = lambda dt: dist3pts() * np.sqrt(dt)
     
-    h = 1.0
+    h = 0.5
     T = 400
     Z0_sdof = [0.0, 0.0, 0.0]
+    M_sdof = 10
+    N_sdof = int(T/h)
     
     t, MSV = MSV_erk2(A=A_sdof, gamma=gamma_sdof, beta=beta_sdof, \
-                      Z0=Z0_sdof, dt=h, DW=dW, N=int(T/h), M=1000)
+                      Z0=Z0_sdof, dt=h, DW=dW, N=N_sdof, M=M_sdof)
+        
+    cm = 1/2.54
+    fig = pl.figure(figsize=(35*cm, 30*cm))
+    fig.tight_layout(pad=5.0*cm)
     
-    pl.subplot(131)
-    pl.plot(t, MSV[:,0], label='E[X(t)²]')
-    pl.xlabel('t')
+    axs1 = pl.subplot(131)
+    pl.plot(t, MSV[:,0], label='ERK2')
+    pl.plot(t, np.ones(N_sdof)*0.031,'r--', label='Exato')
+    pl.xlabel('tempo')
     pl.ylabel('E[X(t)²]')
-    pl.subplot(132)
-    pl.plot(t, MSV[:,1], label='E[Y(t)²]')
-    pl.xlabel('t')
+    axs1.tick_params(axis='both', which='major', labelsize=8)
+    axs1.legend()
+    
+    axs2 = pl.subplot(132)
+    pl.plot(t, MSV[:,1], label='ERK2')
+    pl.plot(t, np.ones(N_sdof)*0.031,'r--', label='Exato')
+    pl.xlabel('tempo')
     pl.ylabel('E[Y(t)²]')
-    pl.subplot(133)
-    pl.plot(t, MSV[:,2], label='E[V(t)²]')
-    pl.xlabel('t')
+    axs2.tick_params(axis='both', which='major', labelsize=8)
+    axs2.legend()
+    
+    axs3 = pl.subplot(133)
+    pl.plot(t, MSV[:,2], label='ERK2')
+    pl.plot(t, np.ones(N_sdof)*0.031,'r--', label='Exato')
+    pl.xlabel('tempo')
     pl.ylabel('E[V(t)²]')
+    axs3.tick_params(axis='both', which='major', labelsize=8)
+    axs3.legend()
+    
     pl.show()

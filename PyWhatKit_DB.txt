@@ -1,0 +1,80 @@
+Date: 1/3/2022
+Time: 22:38
+Phone Number: +5521998225802
+Message: Teste
+--------------------
+Date: 1/3/2022
+Time: 22:40
+Phone Number: +5521998225802
+Message: Teste
+--------------------
+Date: 1/3/2022
+Time: 22:46
+Group ID: Mim
+Message: Teste
+--------------------
+Date: 1/3/2022
+Time: 22:47
+Group ID: Mim
+Message: Teste
+--------------------
+Date: 1/3/2022
+Time: 22:50
+Group ID: HsF1C01KgnpKcTqGlSjEy3
+Message: Teste
+--------------------
+Date: 1/3/2022
+Time: 22:54
+Group ID: sF1C01KgnpKcTqGlSjEy3
+Message: hello
+--------------------
+Date: 1/3/2022
+Time: 22:58
+Phone Number: +5521998225802
+Message: 777
+--------------------
+Date: 1/3/2022
+Time: 23:7
+Phone Number: +5521998225802
+Message: 777
+--------------------
+Date: 1/3/2022
+Time: 23:8
+Phone Number: +5521998225802
+Message: 777
+--------------------
+Date: 1/3/2022
+Time: 23:9
+Phone Number: +5521998225802
+Message: 777
+--------------------
+Date: 1/3/2022
+Time: 23:10
+Phone Number: +5521998225802
+Message: 777
+--------------------
+Date: 1/3/2022
+Time: 23:14
+Phone Number: +5535991555684
+Message: 777
+--------------------
+Date: 1/3/2022
+Time: 23:15
+Phone Number: +5535991555684
+Message: 777
+--------------------
+Date: 1/3/2022
+Time: 23:16
+Phone Number: +5535991555684
+Message: 777
+--------------------
+Date: 1/3/2022
+Time: 23:17
+Phone Number: +5535991555684
+Message: 777
+--------------------
+Date: 1/3/2022
+Time: 23:18
+Phone Number: +5535991555684
+Message: 777
+--------------------
